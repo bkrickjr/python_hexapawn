@@ -18,17 +18,17 @@ class Pawn():
         #* Return the moves available to the Pawn. If a move is invalid, the value will be None.
         '''
         pawn_col = self.space % 3                               # mod 3 to get pawn column
-        print('pawn column %s'%(pawn_col))
+        #print('pawn column %s'%(pawn_col))
         if (self.owner == 1):                            # if the pawn belongs to the player
             if (self.space > 5):                                # - if the pawn is in the bottom row
                 next_row = self.gameboard.get_mid_row()         # -- get the middle row of the gameboard
-                print('pawn column %s'%(next_row))
+                #print('pawn column %s'%(next_row))
                 if (pawn_col == 0): self.left_moves(next_row)   # -- if the pawn is on the left wall                    
                 if (pawn_col == 1): self.center_moves(next_row) # -- if the pawn is the center                    
                 if (pawn_col == 2): self.right_moves(next_row)  # -- if the pawn is on the right wall
             elif (self.space < 6 or self.space > 2):            # - if the pawn is in the mid row
                 next_row = self.gameboard.get_top_row()         # -- get the middle row of the gameboard
-                print('pawn column %s'%(next_row))
+                #print('pawn column %s'%(next_row))
                 if (pawn_col == 0): self.left_moves(next_row)   # -- if the pawn is on the left wall                    
                 if (pawn_col == 1): self.center_moves(next_row) # -- if the pawn is the center                    
                 if (pawn_col == 2): self.right_moves(next_row)  # -- if the pawn is on the right wall
@@ -36,13 +36,13 @@ class Pawn():
         elif (self.owner == -1):
             if (self.space < 3):                                # - if the pawn is in the top row
                 next_row = self.gameboard.get_mid_row()         # -- get the middle row of the gameboard
-                print('pawn column %s'%(next_row))
+                #print('pawn column %s'%(next_row))
                 if (pawn_col == 0): self.left_moves(next_row)   # -- if the pawn is on the left wall                    
                 if (pawn_col == 1): self.center_moves(next_row) # -- if the pawn is the center                    
                 if (pawn_col == 2): self.right_moves(next_row)  # -- if the pawn is on the right wall
             elif (self.space < 6 or self.space > 2):            # - if the pawn is in the mid row
                 next_row = self.gameboard.get_bot_row()         # -- get the middle row of the gameboard
-                print('pawn column %s'%(next_row))
+                #print('pawn column %s'%(next_row))
                 if (pawn_col == 0): self.left_moves(next_row)   # -- if the pawn is on the left wall                    
                 if (pawn_col == 1): self.center_moves(next_row) # -- if the pawn is the center                    
                 if (pawn_col == 2): self.right_moves(next_row)  # -- if the pawn is on the right wall
