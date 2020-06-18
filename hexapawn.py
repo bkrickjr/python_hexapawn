@@ -39,14 +39,36 @@ class Window(QMainWindow):
         '''
         print('pawn clicked index %s'%(index))
         # if nothing is selected or what is selected is not what was clicked
-        for pawn in self.player_pawns:
-            if (pawn.get_space() == index):
-                resp = pawn.get_moves()
-                self.selected = pawn
-                self.style_selected(self.btn_list[index])
+        for pawn in self.player_pawns:                                  # for each pawn in player pawn
+            if (pawn.get_space() == index):                             # - if the pawn's space is the selected space
+                if (self.selected):                                     # -- if there is something selected
+                    if (pawn.get_space() == self.selected.get_space()): # --- if the space of the pawn and the selected pawn space are the same
+                        print('Already Selected. Deselecting Pawn.')
+                        self.deselect_pawn(index)                       # ---- deselect the pawn
+                    else:                                               # --- if the space of the pawn and the selected pawn space are different
+                        print('Already Selected. Selecting New Pawn.')
+                        resp = pawn.get_moves()
+                        self.deselect_pawn(self.selected.get_space())   # ---- deselect current pawn
+                        self.select_pawn(pawn, index)                   # ---- select the pawn
+                    # if end
+                else:                                                   # -- if there is nothing selected
+                    print('Nothing Selected. Selecting Pawn.')
+                    resp = pawn.get_moves()
+                    self.select_pawn(pawn, index)                       # --- select the pawn
+                # if end
             # if end
         # for end
     # onclick_board_btn end
+
+    def select_pawn(self, pawn: pawn, index: int):
+        self.selected = pawn
+        self.style_selected(self.btn_list[index])
+    # select_pawn end
+
+    def deselect_pawn(self, index: int):
+        self.selected = None
+        self.style_deselected(self.btn_list[index])
+    # select_pawn end
 
     def generate_board(self):
         self.gameboard = gameboard.GameBoard()                          # create the board
@@ -54,21 +76,19 @@ class Window(QMainWindow):
         self.computer_pawns = []
         for i in range(0, 9):                                           # loop 0-8 for each tile
             if (i < 3): 
-                created_pawn = pawn.Pawn('Computer', i, self.gameboard) # - if the loop is in the top row, make computer pawns
+                created_pawn = pawn.Pawn(-1, i, self.gameboard) # - if the loop is in the top row, make computer pawns
                 self.computer_pawns.append(created_pawn)
             if (i > 5): 
-                created_pawn = pawn.Pawn('Player', i, self.gameboard)   # - if the loop is in the bot row, make player pawns
+                created_pawn = pawn.Pawn(1, i, self.gameboard)   # - if the loop is in the bot row, make player pawns
                 self.player_pawns.append(created_pawn)
         # for end
     # generate_board end
 
     def style_selected(self, btn):
-        print('attempting to style as selected')
         btn.setStyleSheet("border-color: blue;" "background-color: rgb(170, 170, 15);")
     # style_selected end
 
     def style_deselected(self, btn):
-        print('attempting to style as deselected')
         btn.setStyleSheet("border-color: black; background-color: rgb(120, 120, 120);")
     # style_deselected end
 

@@ -1,8 +1,8 @@
 class GameBoard():
     def __init__(self):
-        self.row_top = ['Computer', 'Computer', 'Computer']
-        self.row_mid = ['', '', '']
-        self.row_bot = ['Player', 'Player', 'Player']
+        self.row_top = [-1, -1, -1]
+        self.row_mid = [0, 0, 0]
+        self.row_bot = [1, 1, 1]
     # __init__ end
 
     def get_top_row(self):
@@ -18,14 +18,14 @@ class GameBoard():
     # get_bot_row
 
     def check_player_win(self):
-        if ('Player' in self.row_top):
+        if (1 in self.row_top):
             return True
         # if end
         return False
     # #check_player_win
     
     def check_computer_win(self):
-        if ('Computer' in self.row_bot):
+        if (-1 in self.row_bot):
             return True
         # if end
         return False
