@@ -89,10 +89,6 @@
          <property name="text">
           <string/>
          </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>icons/pawn_black.png</normaloff>icons/pawn_black.png</iconset>
-         </property>
          <property name="iconSize">
           <size>
            <width>25</width>
@@ -121,10 +117,6 @@
          <property name="text">
           <string/>
          </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>icons/pawn_black.png</normaloff>icons/pawn_black.png</iconset>
-         </property>
          <property name="iconSize">
           <size>
            <width>25</width>
@@ -152,10 +144,6 @@
          </property>
          <property name="text">
           <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>icons/pawn_black.png</normaloff>icons/pawn_black.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -269,10 +257,6 @@
          <property name="text">
           <string/>
          </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>icons/pawn_white.png</normaloff>icons/pawn_white.png</iconset>
-         </property>
          <property name="iconSize">
           <size>
            <width>25</width>
@@ -301,10 +285,6 @@
          <property name="text">
           <string/>
          </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>icons/pawn_white.png</normaloff>icons/pawn_white.png</iconset>
-         </property>
          <property name="iconSize">
           <size>
            <width>25</width>
@@ -332,10 +312,6 @@
          </property>
          <property name="text">
           <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>icons/pawn_white.png</normaloff>icons/pawn_white.png</iconset>
          </property>
          <property name="iconSize">
           <size>
