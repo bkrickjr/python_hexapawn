@@ -18,6 +18,9 @@ class Window(QMainWindow):
         self.btn_debug.clicked.connect(lambda: print(self.debug_log))
         self.update_log('Player Moves First')
 
+        self.win_count_player = 0
+        self.win_count_computer = 0
+
         self.btn0.clicked.connect(lambda: self.onclick_board_btn(0))
         self.btn1.clicked.connect(lambda: self.onclick_board_btn(1))
         self.btn2.clicked.connect(lambda: self.onclick_board_btn(2))
@@ -35,11 +38,53 @@ class Window(QMainWindow):
     # __init__ end
 
     def new_game(self):
+        for btn in self.btn_list:
+            btn.setEnabled(True)
+        # for end
         self.selected = None
         self.turn = 1
         self.game_board.reset_board()
         self.computer = AI(self.game_board, self.log, self.debug_log)
+        self.btn_new_game.setEnabled(True)
+        self.btn_play_again.setEnabled(False)
     # new_game end
+
+    def check_win(self):
+        self.debug_log.add('check_win begin.')
+        toprow = self.game_board.get_top_row()
+        for tile in toprow:
+            self.debug_log.add('Top Row position %s, controlled %s'%(tile.get_pos(), tile.get_controlled()))
+            if (tile.get_controlled() == 1):
+                self.debug_log.add('Player Pawn Found')
+                self.game_over('Player Win!')
+                return True
+            # if end
+        # for end
+
+        botrow = self.game_board.get_bot_row()
+        for tile in botrow:
+            self.debug_log.add('Bot Row position %s, controlled %s'%(tile.get_pos(), tile.get_controlled()))
+            if (tile.get_controlled() == -1):
+                self.debug_log.add('Computer Pawn Found')
+                self.game_over('Computer Win!')
+                return True
+            # if end
+        # for end
+        self.debug_log.add('No Winner Turn %s'%(self.turn))
+        return False
+    # check_win end
+
+    def game_over(self, msg):
+        self.btn_new_game.setEnabled(False)
+        self.btn_play_again.setEnabled(True)
+        for btn in self.btn_list:
+            btn.setEnabled(False)
+        # for end
+        self.update_log(msg)
+        if ('Player' in msg): result = 'loss'
+        else: result = 'win'
+        self.computer.learn(result)
+    # game_over end
 
     def onclick_board_btn(self, index):
         tile_clicked = self.game_board.tiles[index]          # get the tile
@@ -58,7 +103,6 @@ class Window(QMainWindow):
                 self.debug_log.add('Selecting another player pawn')
                 self.game_board.unselect_all()               # -- clear all the formatting
                 self.select_tile(tile_clicked)               # -- select the tile
-                return                                       # -- return
             # if end
 
             if (controlled == 0):                            # - if the tile_clicked is an open space (0), check if it's movable
@@ -70,14 +114,14 @@ class Window(QMainWindow):
                     self.game_board.unselect_all()           # --- clear all the formatting
                     self.update_log('Turn %s: Player moved from position %s to %s'%(self.turn, self.selected.get_pos(), tile_clicked.get_pos()))
                     self.selected = None                     # --- deselect the current tile
-                    self.next_turn()                         # --- AI moves
-                    self.update_log('Player Turn %s'%(self.turn))
-                    return
+                    won = self.check_win()
+                    if (not won):
+                        self.next_turn()                     # --- AI moves
+                        self.update_log('Player Turn %s'%(self.turn))
                 else:                                        # -- if the tile_clicked is not movable
                     self.debug_log.add('Tile is not movable')
                     self.game_board.unselect_all()           # --- clear all the formatting
                     self.selected = None                     # --- deselect the current tile
-                    return
                 # if end
             # if end
 
@@ -90,14 +134,14 @@ class Window(QMainWindow):
                     self.game_board.unselect_all()           # --- clear all the formatting
                     self.update_log('Turn %s: Player moved from position %s to %s'%(self.turn, self.selected.get_pos(), tile_clicked.get_pos()))
                     self.selected = None                     # --- deselect the current tile
-                    self.next_turn()                         # --- AI moves
-                    self.update_log('Player Turn %s'%(self.turn))
-                    return
+                    won = self.check_win()
+                    if (not won):
+                        self.next_turn()                     # --- AI moves
+                        self.update_log('Player Turn %s'%(self.turn))
                 else:                                        # -- if the tile_clicked is not movable
                     self.debug_log.add('Tile is not attackable')
                     self.game_board.unselect_all()           # --- clear all the formatting
                     self.selected = None                     # --- deselect the current tile
-                    return
                 # if end
             # if end
         # if end
@@ -107,7 +151,27 @@ class Window(QMainWindow):
         if (self.turn == 1):
             self.computer.turn2()
             self.turn += 2
+            won = self.check_win()
+            if (won):
+                self.game_over('Computer Win!')
+            return
         # if end
+        if (self.turn == 3):
+            self.computer.turn4()
+            self.turn += 2
+            won = self.check_win()
+            if (won):
+                self.game_over('Computer Win!')
+            return
+        # if end
+        if (self.turn == 5):
+            self.computer.turn6()
+            self.turn += 2
+            won = self.check_win()
+            if (won):
+                self.game_over('Computer Win!')
+            return
+        # if end        
     # next_turn end
 
     def select_tile(self, tile):
