@@ -1,6 +1,7 @@
 import gameboard
 import log
 import sys
+from ai import AI
 from PyQt5.QtWidgets import QStyleFactory, QApplication, QMainWindow, QFileDialog, QLineEdit, QPushButton
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QTextCursor
@@ -17,9 +18,6 @@ class Window(QMainWindow):
         self.btn_debug.clicked.connect(lambda: print(self.debug_log))
         self.update_log('Player Moves First')
 
-        self.selected = None
-
-
         self.btn0.clicked.connect(lambda: self.onclick_board_btn(0))
         self.btn1.clicked.connect(lambda: self.onclick_board_btn(1))
         self.btn2.clicked.connect(lambda: self.onclick_board_btn(2))
@@ -30,13 +28,18 @@ class Window(QMainWindow):
         self.btn7.clicked.connect(lambda: self.onclick_board_btn(7))
         self.btn8.clicked.connect(lambda: self.onclick_board_btn(8))
         self.btn_list = [self.btn0, self.btn1, self.btn2, self.btn3, self.btn4, self.btn5, self.btn6, self.btn7, self.btn8]
+        self.btn_new_game.clicked.connect(self.new_game)
 
-        self.gen_new_board()
+        self.game_board = gameboard.GameBoard(self.btn_list)
+        self.new_game()
     # __init__ end
 
-    def gen_new_board(self):
-        self.game_board = gameboard.GameBoard(self.btn_list)
-    # gen_new_board end
+    def new_game(self):
+        self.selected = None
+        self.turn = 1
+        self.game_board.reset_board()
+        self.computer = AI(self.game_board, self.log, self.debug_log)
+    # new_game end
 
     def onclick_board_btn(self, index):
         tile_clicked = self.game_board.tiles[index]          # get the tile
@@ -65,7 +68,10 @@ class Window(QMainWindow):
                     self.selected.change_control(0)          # --- remove player from currently selected
                     tile_clicked.change_control(1)           # --- move player to tile_clicked
                     self.game_board.unselect_all()           # --- clear all the formatting
+                    self.update_log('Turn %s: Player moved from position %s to %s'%(self.turn, self.selected.get_pos(), tile_clicked.get_pos()))
                     self.selected = None                     # --- deselect the current tile
+                    self.next_turn()                         # --- AI moves
+                    self.update_log('Player Turn %s'%(self.turn))
                     return
                 else:                                        # -- if the tile_clicked is not movable
                     self.debug_log.add('Tile is not movable')
@@ -82,7 +88,10 @@ class Window(QMainWindow):
                     self.selected.change_control(0)          # --- remove player from currently selected
                     tile_clicked.change_control(1)           # --- move player to tile_clicked
                     self.game_board.unselect_all()           # --- clear all the formatting
+                    self.update_log('Turn %s: Player moved from position %s to %s'%(self.turn, self.selected.get_pos(), tile_clicked.get_pos()))
                     self.selected = None                     # --- deselect the current tile
+                    self.next_turn()                         # --- AI moves
+                    self.update_log('Player Turn %s'%(self.turn))
                     return
                 else:                                        # -- if the tile_clicked is not movable
                     self.debug_log.add('Tile is not attackable')
@@ -91,8 +100,15 @@ class Window(QMainWindow):
                     return
                 # if end
             # if end
-        # if end            
+        # if end
     # onclick_board_btn
+
+    def next_turn(self):
+        if (self.turn == 1):
+            self.computer.turn2()
+            self.turn += 2
+        # if end
+    # next_turn end
 
     def select_tile(self, tile):
         self.selected = tile

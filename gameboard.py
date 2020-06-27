@@ -9,6 +9,14 @@ class GameBoard():
         #self.test_board()
     # __init__ end
 
+    def get_game_state(self):
+        resp = []
+        for tile in self.tiles:
+            resp.append(tile.get_controlled())
+        # for end
+        return resp
+    # get_game_state end
+
     def get_top_row(self):
         return [self.tiles[0], self.tiles[1], self.tiles[2]]
     # get_top_row
@@ -35,6 +43,19 @@ class GameBoard():
             self.tiles[i].change_control(1)
         # for end
     # new_board end
+
+    def reset_board(self):
+        for i in range(0, 3):
+            self.tiles[i].change_control(-1)
+        # for end
+        for i in range(3, 6):
+            self.tiles[i].change_control(0)
+        # for end
+
+        for i in range(6, 9):
+            self.tiles[i].change_control(1)
+        # for end
+    # reset_board end
 
     def test_board(self):
         for i in range(0, 9):

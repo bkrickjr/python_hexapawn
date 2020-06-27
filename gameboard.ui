@@ -334,16 +334,28 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="btn_new_game">
+         <property name="toolTip">
+          <string>Give Up on this game, giving the computer a win</string>
+         </property>
          <property name="text">
           <string>New Game</string>
+         </property>
+         <property name="shortcut">
+          <string>N</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="btn_new_ai">
+         <property name="toolTip">
+          <string>Reset the computer to forget all it's previous victories and defeats</string>
+         </property>
          <property name="text">
           <string>Reset AI</string>
+         </property>
+         <property name="shortcut">
+          <string>R</string>
          </property>
         </widget>
        </item>
@@ -358,6 +370,9 @@
         <widget class="QPushButton" name="btn_debug">
          <property name="text">
           <string>Print Debug</string>
+         </property>
+         <property name="shortcut">
+          <string>P</string>
          </property>
         </widget>
        </item>
