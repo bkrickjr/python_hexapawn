@@ -1,6 +1,5 @@
 import gameboard
 import log
-import pawn
 import sys
 from PyQt5.QtWidgets import QStyleFactory, QApplication, QMainWindow, QFileDialog, QLineEdit, QPushButton
 from PyQt5.uic import loadUi
@@ -14,6 +13,8 @@ class Window(QMainWindow):
         self.setStyle(QStyleFactory.create('Fusion'))
 
         self.log = log.Log('Welcome to Hexapawn!')
+        self.debug_log = log.Log('Hexapawn Debug -')
+        self.btn_debug.clicked.connect(lambda: print(self.debug_log))
         self.update_log('Player Moves First')
 
         self.selected = None
@@ -38,115 +39,66 @@ class Window(QMainWindow):
     # gen_new_board end
 
     def onclick_board_btn(self, index):
-        tile_clicked = self.game_board.tiles[index]
-        if (tile_clicked.get_controlled()):
-            tile_clicked.style_button(tile_clicked._style_selected)
-            self.game_board.show_moves(index)
+        tile_clicked = self.game_board.tiles[index]          # get the tile
+        if (not self.selected):                              # if nothing was previously selected
+            if (tile_clicked.get_controlled() == 1):         # - if the tile_clicked is owned by the player (1)
+                self.debug_log.add('Nothing selected, selecting %s'%(tile_clicked))
+                self.select_tile(tile_clicked)               # -- select the tile
+                return                                       # -- return
+            # if end
         # if end
-    # onclick_board_btn
 
-    #'''
-    #def onclick_board_btn(self, index: int):
-        #'''
-        #* Handle the clicks of the game tiles.
-        '''
-        print('pawn clicked index %s'%(index))
-        for pawn in self.player_pawns:                                  # for each pawn in player pawn
-            if (pawn.get_space() == index):                             # - if the pawn's space is the selected space
-                if (self.selected):                                     # -- if there is something selected
-                    if (pawn.get_space() == self.selected.get_space()): # --- if the space of the pawn and the selected pawn space are the same
-                        print('Already Selected. Deselecting Pawn.')
-                        self.clear_selection()                          # ---- deselect the pawn
-                        return
-                    else:                                               # --- if the space of the pawn and the selected pawn space are different
-                        print('Already Selected. Selecting New Pawn.')
-                        self.clear_selection()                          # ---- deselect current pawn
-                        self.select_pawn(pawn, index)                   # ---- select the pawn
-                    # if end
-                else:                                                   # -- if there is nothing selected
-                    print('Nothing Selected. Selecting Pawn.')                    
-                    self.select_pawn(pawn, index)                       # --- select the pawn
+        if (self.selected):                                  # if there is something selected
+            self.debug_log.add('Something already selected')
+            controlled = tile_clicked.get_controlled()
+            if (controlled == 1):                            # - if the tile_clicked is owned by the player (1), switching selection
+                self.debug_log.add('Selecting another player pawn')
+                self.game_board.unselect_all()               # -- clear all the formatting
+                self.select_tile(tile_clicked)               # -- select the tile
+                return                                       # -- return
+            # if end
+
+            if (controlled == 0):                            # - if the tile_clicked is an open space (0), check if it's movable
+                self.debug_log.add('Empty Tile Clicked %s'%(tile_clicked))
+                if (tile_clicked.is_movable(self.selected)): # -- if the tile_clicked is movable
+                    self.debug_log.add('Tile is movable')
+                    self.selected.change_control(0)          # --- remove player from currently selected
+                    tile_clicked.change_control(1)           # --- move player to tile_clicked
+                    self.game_board.unselect_all()           # --- clear all the formatting
+                    self.selected = None                     # --- deselect the current tile
+                    return
+                else:                                        # -- if the tile_clicked is not movable
+                    self.debug_log.add('Tile is not movable')
+                    self.game_board.unselect_all()           # --- clear all the formatting
+                    self.selected = None                     # --- deselect the current tile
+                    return
                 # if end
             # if end
-        # for end
 
-        if (self.selected): # if there is something selected already
-            sel_space = self.selected.get_space()
-            left_index = sel_space - 4
-            forward_index = sel_space - 3
-            right_index = sel_space - 2
-            #!
-    ## onclick_board_btn end
+            if (controlled == -1):
+                self.debug_log.add('Enemy Tile Clicked %s'%(tile_clicked))
+                if (tile_clicked.is_attackable(self.selected)): # -- if the tile_clicked is movable
+                    self.debug_log.add('Tile is attackable')
+                    self.selected.change_control(0)          # --- remove player from currently selected
+                    tile_clicked.change_control(1)           # --- move player to tile_clicked
+                    self.game_board.unselect_all()           # --- clear all the formatting
+                    self.selected = None                     # --- deselect the current tile
+                    return
+                else:                                        # -- if the tile_clicked is not movable
+                    self.debug_log.add('Tile is not attackable')
+                    self.game_board.unselect_all()           # --- clear all the formatting
+                    self.selected = None                     # --- deselect the current tile
+                    return
+                # if end
+            # if end
+        # if end            
+    # onclick_board_btn
 
-    #def select_pawn(self, pawn: pawn, index: int):
-        '''
-        #* Highlight the pawn that was clicked.
-        '''
-        self.selected = pawn
-        self.style_selected(self.btn_list[index])
-        moves = pawn.get_moves()
-        self.show_moves(moves)
-    ## select_pawn end
-
-    #def clear_selection(self):
-        '''
-        #* Highlight the pawn that was clicked.
-        '''
-        self.selected = None
-        for btn in self.btn_list: self.style_deselected(btn)
-    ## clear_selection end
-
-    #def show_moves(self, moves: dict):
-        '''
-        #* Highlight the places the pawn can move or attack.
-        '''
-        space = self.selected.get_space()
-        if (moves['forward']):
-            index = space - 3
-            self.style_movable(self.btn_list[index])
-        # if end
-
-        if (moves['left']):
-            index = space - 4
-            self.style_attackable(self.btn_list[index])
-        # if end
-
-        if (moves['right']):
-            index = space - 2
-            self.style_attackable(self.btn_list[index])
-        # if end
-    ## show_moves end
-
-    #def gen_new_board(self):
-        self.gameboard = gameboard.GameBoard()                  # create the board
-        self.player_pawns = []                                  # instantiate empty list for player pawns
-        self.computer_pawns = []                                # instantiate empty list for copmputer pawns
-        for i in range(0, 9):                                   # loop 0-8 for each tile
-            if (i < 3):                                         # - if the loop is in the top row
-                created_pawn = pawn.Pawn(-1, i, self.gameboard) # -- make computer pawns
-                self.computer_pawns.append(created_pawn)        # -- add them to the list
-            if (i > 5):                                         # - if the loop is in the bottom row
-                created_pawn = pawn.Pawn(1, i, self.gameboard)  # -- make player pawns
-                self.player_pawns.append(created_pawn)          # -- add them to the list
-        # for end
-    ## gen_new_board end
-
-    #def style_selected(self, btn):
-        btn.setStyleSheet("border-color: blue;" "background-color: rgb(170, 170, 15);")
-    ## style_selected end
-
-    #def style_deselected(self, btn):
-        btn.setStyleSheet("border-color: black; background-color: rgb(120, 120, 120);")
-    ## style_deselected end
-
-    #def style_movable(self, btn):
-        btn.setStyleSheet("border-color: black; background-color: rgb(0, 250, 45);")
-    ## style_movable end
-
-    #def style_attackable(self, btn):
-        btn.setStyleSheet("border-color: black; background-color: rgb(250, 0, 0);")
-    ## style_attackable end
-    #'''
+    def select_tile(self, tile):
+        self.selected = tile
+        self.game_board.show_moves(tile.get_pos())
+        tile.style_button(tile._style_selected)
+    # select_tile end
 
     def update_log(self, addition: str):
         '''

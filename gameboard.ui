@@ -354,6 +354,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="btn_debug">
+         <property name="text">
+          <string>Print Debug</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>

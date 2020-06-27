@@ -1,56 +1,5 @@
 from tile import Tile
 
-'''
-class GameBoard():
-    def __init__(self):
-        self.row_top = [-1, -1, -1]
-        self.row_mid = [0, 0, 0]
-        self.row_bot = [1, 1, 1]
-        self.board = [self.row_top, self.row_mid, self.row_bot]
-    # __init__ end
-
-    def get_top_row(self):
-        return self.row_top
-    # get_top_row
-
-    def get_mid_row(self):
-        return self.row_mid
-    # get_mid_row
-
-    def get_bot_row(self):
-        return self.row_bot
-    # get_bot_row
-
-    def check_player_win(self):
-        if (1 in self.row_top):
-            return True
-        # if end
-        return False
-    # #check_player_win
-    
-    def check_computer_win(self):
-        if (-1 in self.row_bot):
-            return True
-        # if end
-        return False
-    # #check_computer_win
-
-    def make_move(self, mover: int, start_pos: int, move_pos: int):
-        start_col = start_pos % 3
-        start_row = int(start_pos / 3)
-        move_col = move_pos % 3
-        move_row = int(move_pos / 3)
-        
-        self.board[start_row[start_col]] = 0
-        self.board[move_row[move_col]] = mover
-    # make_move end
-
-    def __str__(self):
-        return self.board
-    # __str__ end
-# class end
-'''
-
 class GameBoard():
     def __init__(self, buttons):
         self.tiles = []
@@ -138,6 +87,12 @@ class GameBoard():
         if (right_tile.get_controlled() == -1):
             right_tile.style_button(right_tile._style_attackable)
     # show_move_right end
+
+    def unselect_all(self):
+        for tile in self.tiles:
+            tile.style_button(tile._style_deselected)
+        # for end
+    # unselect_all end
 
     def __str__(self):
         resp = ''

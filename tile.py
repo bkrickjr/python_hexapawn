@@ -41,11 +41,21 @@ class Tile():
         return self.controlled
     # get_controlled end
 
-    def is_movable(mover):
-        if (self.controlled): return False
-        else:
-            self.style_button(self._style_movable)
-            return True
+    def is_attackable(self, attacker):
+        attacker_pos = attacker.get_pos()
+        attackableR = attacker_pos == self.position + 2 
+        attackableL = attacker_pos == self.position + 4
+        attackable = attackableL or attackableR
+        print(attackableL, attackableR)
+        if (self.controlled == -1 and attackable): return True
+        else: return False
+    # is_attackable end
+
+    def is_movable(self, mover):
+        mover_pos = mover.get_pos()
+        movable = mover_pos == self.position + 3
+        if (self.controlled == 0 and movable): return True
+        else: return False
     # is_movable end
 
     def style_button(self, style):
