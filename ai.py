@@ -55,18 +55,40 @@ class AI():
     # __init__ end
 
     def get_options(self, board, moveset):
+        '''
+        #* Get the options of moves available to the AI at this state in the game.\n
+        # @param board: String - The board states for each move are set to 'board01', 'board02', ect.\n
+        # @param moveset: Dictionary - The dictionary to look up the board state in.
+        '''
         length = moveset[board].__len__()
         rand_num = random.randrange(length)
         return moveset[board][rand_num]
     # get_options end
 
     def learn(self, result):
+        '''
+        #* Learn from the game played.\n
+        #* Win - Add the moves 3x.\n
+        #* Draw - Add the moves 1x.\n
+        #* Loss - Remove the moves 1x.
+        # @param result: String - The Computer's win/loss/draw.
+        '''
         self.debug_log.add('Pre-Learn:------------')
         if (self.boardT2): self.debug_log.add(self.movesetT2[self.boardT2])
         if (self.boardT4): self.debug_log.add(self.movesetT4[self.boardT4])
         if (self.boardT6): self.debug_log.add(self.movesetT6[self.boardT6])
         
         if (result == 'win'):                                                      # if the computer won
+            self.movesetT2[self.boardT2].append(self.optionT2)                     # - add the option to the moveset again for Turn2
+            self.movesetT2[self.boardT2].append(self.optionT2)                     # - add the option to the moveset again for Turn2
+            self.movesetT2[self.boardT2].append(self.optionT2)                     # - add the option to the moveset again for Turn2
+            self.movesetT4[self.boardT4].append(self.optionT4)                     # - add the option to the moveset again for Turn4
+            self.movesetT4[self.boardT4].append(self.optionT4)                     # - add the option to the moveset again for Turn4
+            self.movesetT4[self.boardT4].append(self.optionT4)                     # - add the option to the moveset again for Turn4
+            if (self.optionT6): self.movesetT6[self.boardT6].append(self.optionT6) # - add the option to the moveset again for Turn6
+            if (self.optionT6): self.movesetT6[self.boardT6].append(self.optionT6) # - add the option to the moveset again for Turn6
+            if (self.optionT6): self.movesetT6[self.boardT6].append(self.optionT6) # - add the option to the moveset again for Turn6
+        elif (result == 'draw'):
             self.movesetT2[self.boardT2].append(self.optionT2)                     # - add the option to the moveset again for Turn2
             self.movesetT4[self.boardT4].append(self.optionT4)                     # - add the option to the moveset again for Turn4
             if (self.optionT6): self.movesetT6[self.boardT6].append(self.optionT6) # - add the option to the moveset again for Turn6
@@ -107,6 +129,11 @@ class AI():
     # learn end
 
     def take_turn(self, start, move):
+        '''
+        #* Make the move from starting position to move position.add().\n
+        # @param start: Integer - The index of the tile that will be moving.\n
+        # @param move: Integer - The index of the tile that will be moved to.
+        '''
         tiles = self.gb.tiles
         tiles[start].change_control(0)
         tiles[move].change_control(-1)

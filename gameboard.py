@@ -6,10 +6,13 @@ class GameBoard():
         self.buttons = buttons
 
         self.new_board()
-        #self.test_board()
     # __init__ end
 
     def get_game_state(self):
+        '''
+        #* Get the current state of the board, showing who controls what.\n
+        # @return List - The list of values of the controlled tiles.
+        '''
         resp = []
         for tile in self.tiles:
             resp.append(tile.get_controlled())
@@ -30,6 +33,9 @@ class GameBoard():
     # get_bot_row
 
     def new_board(self):
+        '''
+        #* Create a new game board.
+        '''
         for i in range(0, 9):
             tile = Tile(0, i, self.buttons[i])
             self.tiles.append(tile)
@@ -45,6 +51,9 @@ class GameBoard():
     # new_board end
 
     def reset_board(self):
+        '''
+        #* Set the game board to the default tile setup.
+        '''
         for i in range(0, 3):
             self.tiles[i].change_control(-1)
         # for end
@@ -75,6 +84,10 @@ class GameBoard():
     # test_board end
 
     def show_moves(self, index):
+        '''
+        #* Show the moves of the given Tile index by recoloring the Tiles that can be reached by the selected Tile.\n
+        # @param index: Integer - The Tile that is having it's moves shown.
+        '''
         tile = self.tiles[index]
         column = index % 3
         row = int(index / 3)
@@ -110,6 +123,9 @@ class GameBoard():
     # show_move_right end
 
     def unselect_all(self):
+        '''
+        #* Return all tiles to their default style.
+        '''
         for tile in self.tiles:
             tile.style_button(tile._style_deselected)
         # for end

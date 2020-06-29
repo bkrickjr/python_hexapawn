@@ -19,11 +19,18 @@ class Tile():
     # __init__ end
 
     def change_control(self, new_controlled):
+        '''
+        #* Change control of this Tile to the new_controlled, then update the icon accordingly.\n
+        # @param new_controlled: Integer - The value of the new controller of this tile. -1, 0, or 1.
+        '''
         self.controlled = new_controlled
         self.change_icon()
     # change_control end
 
     def change_icon(self):
+        '''
+        #* Change the icon of the Tile based on it's controller.
+        '''
         if (self.controlled == -1): # if controlled by computer
             self.btn.setIcon(self.icon_comp)
         elif(self.controlled == 1): # if controlled by player
@@ -42,6 +49,10 @@ class Tile():
     # get_controlled end
 
     def is_attackable(self, attacker):
+        '''
+        #* Based on the attacker Tile, determine if this Tile is attackable.\n
+        # @param attacker: Tile - The attacking Tile.
+        '''
         attacker_pos = attacker.get_pos()
         attackableR = attacker_pos == self.position + 2 
         attackableL = attacker_pos == self.position + 4
@@ -52,6 +63,10 @@ class Tile():
     # is_attackable end
 
     def is_movable(self, mover):
+        '''
+        #* Based on the mover Tile, determine if this Tile is movable.\n
+        # @param mover: Tile - The moving Tile.
+        '''
         mover_pos = mover.get_pos()
         movable = mover_pos == self.position + 3
         if (self.controlled == 0 and movable): return True
@@ -59,6 +74,10 @@ class Tile():
     # is_movable end
 
     def style_button(self, style):
+        '''
+        #* Style the button.\n
+        # @param style: String - The style the button should have applied.
+        '''
         self.btn.setStyleSheet(style)
     # style_selected end
 

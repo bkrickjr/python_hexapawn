@@ -12,18 +12,19 @@ class Window(QMainWindow):
         QMainWindow.__init__(self, parent)
         loadUi('gameboard.ui', self)
         self.setStyle(QStyleFactory.create('Fusion'))
-
+        #___ Logs
         self.log = log.Log('Welcome to Hexapawn!')
         self.debug_log = log.Log('Hexapawn Debug -')
-        self.btn_debug.clicked.connect(lambda: print(self.debug_log))
+        self.btn_debug.clicked.connect(lambda: self.update_log(self.debug_log))
+        self.btn_log_clear.clicked.connect(lambda: self.clear_logs)
         self.update_log('Player Moves First')
-
+        #___ Tallies
         self.win_count_player = 0
         self.win_count_computer = 0
         self.win_count_draw = 0
 
         self.game_state = 'player turn'
-
+        #___ Buttons and their Signals
         self.btn0.clicked.connect(lambda: self.onclick_board_btn(0))
         self.btn1.clicked.connect(lambda: self.onclick_board_btn(1))
         self.btn2.clicked.connect(lambda: self.onclick_board_btn(2))
@@ -36,36 +37,18 @@ class Window(QMainWindow):
         self.btn_list = [self.btn0, self.btn1, self.btn2, self.btn3, self.btn4, self.btn5, self.btn6, self.btn7, self.btn8]
         self.btn_new_game.clicked.connect(self.new_game)
         self.btn_play_again.clicked.connect(self.play_again)
-
+        self.btn_new_ai.clicked.connect(self.reset_ai)
+        #___ Setup
         self.game_board = gameboard.GameBoard(self.btn_list)
         self.computer = AI(self.game_board, self.log, self.debug_log)
         self.play_again()
     # __init__ end
 
-    def new_game(self):
-        self.computer.learn('win')
-        for btn in self.btn_list:
-            btn.setEnabled(True)
-        # for end
-        self.selected = None
-        self.turn = 1
-        self.game_board.reset_board()
-        self.btn_new_game.setEnabled(True)
-        self.btn_play_again.setEnabled(False)
-    # new_game end
-
-    def play_again(self):
-        for btn in self.btn_list:
-            btn.setEnabled(True)
-        # for end
-        self.selected = None
-        self.turn = 1
-        self.game_board.reset_board()
-        self.btn_new_game.setEnabled(True)
-        self.btn_play_again.setEnabled(False)
-    # play_again end
-
     def check_win(self):
+        '''
+        #* Check if either player has won the game.\n
+        # @return Boolean: True if either won, False if neither won.
+        '''
         self.debug_log.add('check_win begin.')
 
         toprow = self.game_board.get_top_row()  # Player Pawn Reached Top
@@ -118,7 +101,20 @@ class Window(QMainWindow):
         return False
     # check_win end
 
+    def clear_logs(self):
+        '''
+        #* Clear the logs of the UI.
+        '''
+        self.log.clear()
+        self.debug_log.clear()
+    # clear logs end
+
     def game_over(self, msg):
+        '''
+        #* Complete the tasks of ending the game.\n
+        #* Update the UI and let the Computer learn from the results.\n
+        # @param msg: String - Who is the winner.
+        '''
         self.btn_new_game.setEnabled(False)
         self.btn_play_again.setEnabled(True)
         for btn in self.btn_list:
@@ -135,11 +131,30 @@ class Window(QMainWindow):
             self.win_count_draw += 1
             computer_result = 'draw'
         # if end
-        self.update_labels(self.win_count_player, self.win_count_computer)
+        self.update_labels()
         self.computer.learn(computer_result)
     # game_over end
 
+    def new_game(self):
+        '''
+        #* New Game is when the player gives up, giving the computer a win.
+        '''
+        self.computer.learn('win')
+        for btn in self.btn_list:
+            btn.setEnabled(True)
+        # for end
+        self.selected = None
+        self.turn = 1
+        self.game_board.reset_board()
+        self.btn_new_game.setEnabled(True)
+        self.btn_play_again.setEnabled(False)
+    # new_game end
+
     def onclick_board_btn(self, index):
+        '''
+        #* Handle the button clicks of the Game Board.\n
+        # @param index: Integer - The index of the button selected in the self.btn_list.
+        '''
         tile_clicked = self.game_board.tiles[index]          # get the tile
         if (not self.selected):                              # if nothing was previously selected
             if (tile_clicked.get_controlled() == 1):         # - if the tile_clicked is owned by the player (1)
@@ -184,19 +199,10 @@ class Window(QMainWindow):
         # if end
     # onclick_board_btn
 
-    def player_move(self, tile_clicked):
-        self.selected.change_control(0)          # --- remove player from currently selected
-        tile_clicked.change_control(1)           # --- move player to tile_clicked
-        self.game_board.unselect_all()           # --- clear all the formatting
-        self.update_log('Turn %s: Player moved from position %s to %s'%(self.turn, self.selected.get_pos(), tile_clicked.get_pos()))
-        self.selected = None                     # --- deselect the current tile
-        won = self.check_win()
-        if (not won):
-            self.next_turn()
-        # if end
-    # player_move end
-
     def next_turn(self):
+        '''
+        #* Make the computer's move after the player has gone.
+        '''
         if (self.turn == 1):
             self.computer.turn2()
             self.turn += 2
@@ -217,15 +223,66 @@ class Window(QMainWindow):
         # if end        
     # next_turn end
 
+    def play_again(self):
+        '''
+        #* Start a new game after the current one has ended.
+        '''
+        for btn in self.btn_list:
+            btn.setEnabled(True)
+        # for end
+        self.selected = None
+        self.turn = 1
+        self.game_board.reset_board()
+        self.btn_new_game.setEnabled(True)
+        self.btn_play_again.setEnabled(False)
+    # play_again end
+
+    def player_move(self, tile_clicked):
+        '''
+        #* Move the player's pawn to a new tile.\n
+        # @param tile_clicked: Tile - The destination tile, the UI already stores the currently selected tile that will be moving.
+        '''
+        self.selected.change_control(0)          # --- remove player from currently selected
+        tile_clicked.change_control(1)           # --- move player to tile_clicked
+        self.game_board.unselect_all()           # --- clear all the formatting
+        self.update_log('Turn %s: Player moved from position %s to %s'%(self.turn, self.selected.get_pos(), tile_clicked.get_pos()))
+        self.selected = None                     # --- deselect the current tile
+        won = self.check_win()
+        if (not won):
+            self.next_turn()
+        # if end
+    # player_move end
+
+    def reset_ai(self):
+        '''
+        #* Start the AI over from scratch.
+        '''
+        self.win_count_player = 0
+        self.win_count_computer = 0
+        self.win_count_draw = 0
+        self.computer = AI(self.game_board, self.log, self.debug_log)
+        self.play_again()
+        self.update_labels()
+        self.update_log('Resetting Computer Progress')
+    # reset_ai end
+
     def select_tile(self, tile):
+        '''
+        #* Select a tile and show the moves available to it.\n
+        # @param tile: Tile - The tile selected to show the user info about.
+        '''
         self.selected = tile
         self.game_board.show_moves(tile.get_pos())
         tile.style_button(tile._style_selected)
     # select_tile end
 
-    def update_labels(self, player_wins, computer_wins):
-        self.lbl_score_player.setText('Player Wins: %s'%(player_wins))
-        self.lbl_score_computer.setText('Computer Wins: %s'%(computer_wins))
+    def update_labels(self):
+        '''
+        #* Update the labels in the UI to let the user know the scores.
+        '''
+        self.lbl_score_player.setText('Player Wins: %s'%(self.win_count_player))
+        self.lbl_score_computer.setText('Computer Wins: %s'%(self.win_count_computer))
+        self.lbl_score_draw.setText('Draws: %s'%(self.win_count_draw))
     # update_labels end
 
     def update_log(self, addition: str):
