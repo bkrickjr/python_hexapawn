@@ -98,12 +98,12 @@ class AI():
         if (self.boardT6): self.debug_log.add(self.movesetT6[self.boardT6])
         self.debug_log.add('----------------------')
         # no matter what, reset the board and option values so they cant carry over                                
-        #self.boardT2 = None
-        #self.optionT2 = None
-        #self.boardT4 = None
-        #self.optionT4 = None
-        #self.boardT6 = None
-        #self.optionT6 = None
+        self.boardT2 = None
+        self.optionT2 = None
+        self.boardT4 = None
+        self.optionT4 = None
+        self.boardT6 = None
+        self.optionT6 = None
     # learn end
 
     def take_turn(self, start, move):

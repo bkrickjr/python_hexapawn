@@ -20,6 +20,9 @@ class Window(QMainWindow):
 
         self.win_count_player = 0
         self.win_count_computer = 0
+        self.win_count_draw = 0
+
+        self.game_state = 'player turn'
 
         self.btn0.clicked.connect(lambda: self.onclick_board_btn(0))
         self.btn1.clicked.connect(lambda: self.onclick_board_btn(1))
@@ -32,26 +35,40 @@ class Window(QMainWindow):
         self.btn8.clicked.connect(lambda: self.onclick_board_btn(8))
         self.btn_list = [self.btn0, self.btn1, self.btn2, self.btn3, self.btn4, self.btn5, self.btn6, self.btn7, self.btn8]
         self.btn_new_game.clicked.connect(self.new_game)
+        self.btn_play_again.clicked.connect(self.play_again)
 
         self.game_board = gameboard.GameBoard(self.btn_list)
-        self.new_game()
+        self.computer = AI(self.game_board, self.log, self.debug_log)
+        self.play_again()
     # __init__ end
 
     def new_game(self):
+        self.computer.learn('win')
         for btn in self.btn_list:
             btn.setEnabled(True)
         # for end
         self.selected = None
         self.turn = 1
         self.game_board.reset_board()
-        self.computer = AI(self.game_board, self.log, self.debug_log)
         self.btn_new_game.setEnabled(True)
         self.btn_play_again.setEnabled(False)
     # new_game end
 
+    def play_again(self):
+        for btn in self.btn_list:
+            btn.setEnabled(True)
+        # for end
+        self.selected = None
+        self.turn = 1
+        self.game_board.reset_board()
+        self.btn_new_game.setEnabled(True)
+        self.btn_play_again.setEnabled(False)
+    # play_again end
+
     def check_win(self):
         self.debug_log.add('check_win begin.')
-        toprow = self.game_board.get_top_row()
+
+        toprow = self.game_board.get_top_row()  # Player Pawn Reached Top
         for tile in toprow:
             self.debug_log.add('Top Row position %s, controlled %s'%(tile.get_pos(), tile.get_controlled()))
             if (tile.get_controlled() == 1):
@@ -61,7 +78,7 @@ class Window(QMainWindow):
             # if end
         # for end
 
-        botrow = self.game_board.get_bot_row()
+        botrow = self.game_board.get_bot_row() # Computer Pawn Reached Bottom
         for tile in botrow:
             self.debug_log.add('Bot Row position %s, controlled %s'%(tile.get_pos(), tile.get_controlled()))
             if (tile.get_controlled() == -1):
@@ -70,6 +87,33 @@ class Window(QMainWindow):
                 return True
             # if end
         # for end
+
+        gb_state = self.game_board.get_game_state()
+
+        if (not 1 in gb_state):               # Computer Captured All Player Pawns
+            self.game_over('Computer Win!')
+            return True
+        # if end
+
+        if (not -1 in gb_state):              # Player Captured All Computer Pawns
+            self.game_over('Player Win!')
+            return True
+        # if end
+
+        draw00 = [-1,  0,  0,  1,  0, -1,  0,  0,  1]
+        draw01 = [ 0,  0, -1, -1,  0,  1,  1,  0,  0]
+        draw02 = [ 0, -1,  0,  0,  1,  0,  0,  0,  0]
+        draw03 = [-1,  0,  0,  1, -1,  0,  0,  1,  0]
+        draw04 = [ 0,  0, -1,  0, -1,  1,  0,  1,  0]
+        draw05 = [ 0, -1,  0,  0,  1, -1,  0,  0,  1]
+        draw06 = [ 0, -1,  0, -1,  1,  0,  1,  0,  0]
+        draw07 = [ -1,  0, -1,  1, -1, 1,  0,  1,  0]
+        draws = [draw00, draw01, draw02, draw03, draw04, draw05, draw06, draw07]
+        if (gb_state in draws):               # Draw
+            self.game_over('Draw!')
+            return True
+        # if end
+
         self.debug_log.add('No Winner Turn %s'%(self.turn))
         return False
     # check_win end
@@ -81,9 +125,18 @@ class Window(QMainWindow):
             btn.setEnabled(False)
         # for end
         self.update_log(msg)
-        if ('Player' in msg): result = 'loss'
-        else: result = 'win'
-        self.computer.learn(result)
+        if ('Computer' in msg):
+            self.win_count_computer += 1
+            computer_result = 'win'
+        elif ('Player' in msg):
+            self.win_count_player += 1
+            computer_result = 'loss'
+        else:
+            self.win_count_draw += 1
+            computer_result = 'draw'
+        # if end
+        self.update_labels(self.win_count_player, self.win_count_computer)
+        self.computer.learn(computer_result)
     # game_over end
 
     def onclick_board_btn(self, index):
@@ -109,15 +162,7 @@ class Window(QMainWindow):
                 self.debug_log.add('Empty Tile Clicked %s'%(tile_clicked))
                 if (tile_clicked.is_movable(self.selected)): # -- if the tile_clicked is movable
                     self.debug_log.add('Tile is movable')
-                    self.selected.change_control(0)          # --- remove player from currently selected
-                    tile_clicked.change_control(1)           # --- move player to tile_clicked
-                    self.game_board.unselect_all()           # --- clear all the formatting
-                    self.update_log('Turn %s: Player moved from position %s to %s'%(self.turn, self.selected.get_pos(), tile_clicked.get_pos()))
-                    self.selected = None                     # --- deselect the current tile
-                    won = self.check_win()
-                    if (not won):
-                        self.next_turn()                     # --- AI moves
-                        self.update_log('Player Turn %s'%(self.turn))
+                    self.player_move(tile_clicked)
                 else:                                        # -- if the tile_clicked is not movable
                     self.debug_log.add('Tile is not movable')
                     self.game_board.unselect_all()           # --- clear all the formatting
@@ -129,15 +174,7 @@ class Window(QMainWindow):
                 self.debug_log.add('Enemy Tile Clicked %s'%(tile_clicked))
                 if (tile_clicked.is_attackable(self.selected)): # -- if the tile_clicked is movable
                     self.debug_log.add('Tile is attackable')
-                    self.selected.change_control(0)          # --- remove player from currently selected
-                    tile_clicked.change_control(1)           # --- move player to tile_clicked
-                    self.game_board.unselect_all()           # --- clear all the formatting
-                    self.update_log('Turn %s: Player moved from position %s to %s'%(self.turn, self.selected.get_pos(), tile_clicked.get_pos()))
-                    self.selected = None                     # --- deselect the current tile
-                    won = self.check_win()
-                    if (not won):
-                        self.next_turn()                     # --- AI moves
-                        self.update_log('Player Turn %s'%(self.turn))
+                    self.player_move(tile_clicked)
                 else:                                        # -- if the tile_clicked is not movable
                     self.debug_log.add('Tile is not attackable')
                     self.game_board.unselect_all()           # --- clear all the formatting
@@ -147,29 +184,35 @@ class Window(QMainWindow):
         # if end
     # onclick_board_btn
 
+    def player_move(self, tile_clicked):
+        self.selected.change_control(0)          # --- remove player from currently selected
+        tile_clicked.change_control(1)           # --- move player to tile_clicked
+        self.game_board.unselect_all()           # --- clear all the formatting
+        self.update_log('Turn %s: Player moved from position %s to %s'%(self.turn, self.selected.get_pos(), tile_clicked.get_pos()))
+        self.selected = None                     # --- deselect the current tile
+        won = self.check_win()
+        if (not won):
+            self.next_turn()
+        # if end
+    # player_move end
+
     def next_turn(self):
         if (self.turn == 1):
             self.computer.turn2()
             self.turn += 2
             won = self.check_win()
-            if (won):
-                self.game_over('Computer Win!')
             return
         # if end
         if (self.turn == 3):
             self.computer.turn4()
             self.turn += 2
             won = self.check_win()
-            if (won):
-                self.game_over('Computer Win!')
             return
         # if end
         if (self.turn == 5):
             self.computer.turn6()
             self.turn += 2
             won = self.check_win()
-            if (won):
-                self.game_over('Computer Win!')
             return
         # if end        
     # next_turn end
@@ -179,6 +222,11 @@ class Window(QMainWindow):
         self.game_board.show_moves(tile.get_pos())
         tile.style_button(tile._style_selected)
     # select_tile end
+
+    def update_labels(self, player_wins, computer_wins):
+        self.lbl_score_player.setText('Player Wins: %s'%(player_wins))
+        self.lbl_score_computer.setText('Computer Wins: %s'%(computer_wins))
+    # update_labels end
 
     def update_log(self, addition: str):
         '''
